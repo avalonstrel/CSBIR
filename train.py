@@ -143,10 +143,12 @@ class Solver:
         for i,(phos, cs) in enumerate(data_loader):
         #for i in tqdm(range(len(data))):
         #    (phos, cs) = data[i]
+            #if i > 100:
+            #    break
             print('\r{}/{}'.format(i, len(data_loader)), end='')
             with torch.no_grad():
                 phos_cates.append(cs)
-                phos_feats.append(self.model['net'](phos.to(self.config.device)).cpu())
+                phos_feats.append(self.model['net'](phos.to(self.config.device)))
         phos_feats = torch.cat(phos_feats)
         phos_cates = torch.cat(phos_cates)
 
@@ -168,7 +170,7 @@ class Solver:
 
             # compute average precision
             k, rightk, precision = 0, 0, []
-            while rightk < cate_num[c]:
+            while rightk < cate_num[c.item()]:
                 precision.append(res[:k+1].mean().item())
                 k, rightk = k+1, rightk + res[k].item()
             APs.append(sum(precision)/len(precision))

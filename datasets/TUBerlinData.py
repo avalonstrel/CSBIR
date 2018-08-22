@@ -66,7 +66,7 @@ class TUBerlinData(Dataset):
         if self.mode == 'std':
             for c in cates['source']:
                 self.source_train_phos[c] = phos[c]
-                self.cate_num[c] = len(phos[c])
+                self.cate_num[self.cate2idx[c]] = len(phos[c])
                 random.shuffle(skts[c])
                 self.source_train_skts[c] = skts[c][:-20]
                 self.source_valid_skts[c] = skts[c][-20:-10]
