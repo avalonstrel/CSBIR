@@ -5,6 +5,7 @@ import time
 from models import losses
 #from test import test
 from utils import *
+from tqdm import tqdm
 
 
 class Solver:
@@ -133,7 +134,8 @@ class Solver:
         self.data.set_phase('valid')
         data_loader = self.data.get_loader(batch_size=self.config.batch_size, num_workers=self.config.batch_size//2)
         phos_feats, phos_cates = [], []
-        for (phos, cs) in data_loader:
+        print('getting features of photos')
+        for (phos, cs) in tqdm(data_loader):
             with torch.no_grad():
                 phos_cates.append(cs)
                 phos_feats.append(self.model['net'](phos.to(self.config.device)))
@@ -142,7 +144,8 @@ class Solver:
 
         # compute MAP and precision@200
         APs, P200 = [], []
-        for i in range(len(skts_feats)):
+        print('validating')
+        for i in tqdm(range(len(skts_feats))):
             skt_feat = skts_feats[i].unsqueeze(0)
             c = valid_cates[i]
             # compute distance
