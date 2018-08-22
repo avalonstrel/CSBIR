@@ -133,9 +133,9 @@ class Solver:
         self.data.set_phase('valid')
         data_loader = self.data.get_loader(batch_size=self.config.batch_size, num_workers=self.config.batch_size//2)
         phos_feats, phos_cates = [], []
-        for (_, phos, cs) in data_loader:
+        for (phos, cs) in data_loader:
             with torch.no_grad():
-                phos_cates.append(cs[:,1])
+                phos_cates.append(cs)
                 phos_feats.append(self.model['net'](phos.to(self.config.device)))
         phos_feats = torch.cat(phos_feats)
         phos_cates = torch.cat(phos_cates)
@@ -172,7 +172,7 @@ class Solver:
         print('####### Validation ######')
         print('MAP:{:.4f} | P200:{:4f}'.format(MAP, P200))
 
-
+        self.data.set_phase('train')
         self.model['net'].train()
 
     def test(self, log):

@@ -116,7 +116,7 @@ class TUBerlinData(Dataset):
             (fskt, cskt) = self.train_skts[index]
             skt = self.to_tensor(self.randomflip(self.randomcrop(Image.open(fskt)))).expand(3, self.crop_size, self.crop_size)
         else:
-            skt, cskt = None, -1
+            return pho, torch.LoneTensor([cpho])
 
         cates = torch.LongTensor([cskt, cpho])
         return skt, pho, cates
