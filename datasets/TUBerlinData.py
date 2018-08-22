@@ -69,7 +69,7 @@ class TUBerlinData(Dataset):
                 self.cate_num[self.cate2idx[c]] = len(phos[c])
                 random.shuffle(skts[c])
                 self.source_train_skts[c] = skts[c][:-20]
-                self.source_valid_skts[c] = skts[c][-20:-10]
+                self.source_valid_skts[c] = skts[c][-11:-10]
                 self.target_test_skts[c] = skts[c][-10:]
         else:
             raise NotImplementedError('Currently, only standard mode is supported.')

@@ -150,19 +150,19 @@ class Solver:
                 phos_cates.append(cs)
                 phos_feats.append(self.model['net'](phos.to(self.config.device)))
         phos_feats = torch.cat(phos_feats)
-        phos_cates = torch.cat(phos_cates)
+        phos_cates = torch.cat(phos_cates).to(self.config.device)
 
         # compute MAP and precision@200
         APs, P200 = [], []
         print('validating')
         for i in tqdm(range(len(skts_feats))):
             skt_feat = skts_feats[i].unsqueeze(0)
-            c = valid_cates[i]
+            c = valid_cates[i].item()
             # compute distance
             with torch.no_grad():
                 if self.config.distance == 'sq':
                     dist = (phos_feats - skt_feat).pow(2).sum(dim=1)
-                dist = dist.cpu()
+                #dist = dist.cpu()
                 res = phos_cates[dist.sort(dim=0)[1]] == c
                 res = res.float()
             # compute p@200
@@ -170,7 +170,7 @@ class Solver:
 
             # compute average precision
             k, rightk, precision = 0, 0, []
-            while rightk < cate_num[c.item()]:
+            while rightk < cate_num[c]:
                 precision.append(res[:k+1].mean().item())
                 k, rightk = k+1, rightk + res[k].item()
             APs.append(sum(precision)/len(precision))
