@@ -9,6 +9,7 @@ from utils import *
 
 class Solver:
     def __init__(self, config, data, model):
+        print(config)
         self.config = config
         self.data = data
         self.model = model
@@ -74,8 +75,9 @@ class Solver:
             for loss_type in ('sphere', 'softmax', 'centre'):
                 if loss_type in self.config.loss_type:
                     self.compute_feat(skts, phos)
-
+                  
                     loss_ = self.model[loss_type](self.feats, idxs)
+
                     log['loss/%s'%loss_type] = loss_.item()
                     loss += loss_ * self.loss_ratio[loss_type]
 

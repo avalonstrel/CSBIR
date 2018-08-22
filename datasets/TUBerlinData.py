@@ -23,7 +23,8 @@ class TUBerlinData(Dataset):
             m, c = c.split('/')
             cates[m] = cates.get(m, [])+ [c]
             self.cate2idx[c] = i
-        self.num_cates = len(cates.keys())
+        
+        self.num_cates = len(cates_raw)
 
 		# rearrange cate according to mode
         assert mode in ('std', 'fewshot-train', 'fewshot-finetune', 'zeroshot-train')
@@ -128,7 +129,7 @@ class TUBerlinData(Dataset):
                 skts.append(self.to_tensor(self.centercrop(Image.open(fskt))))
                 cs.append(c)
 
-            skts = torch.stack(skts)
+            skts = torch.stack(skts).repeat(1,3,1,1)
             cs = torch.LongTensor(cs)
             self.validskt = (skts, cs)
         return self.validskt
@@ -141,7 +142,7 @@ class TUBerlinData(Dataset):
                 skts.append(self.to_tensor(self.centercrop(Image.open(fskt))))
                 cs.append(c)
 
-            skts = torch.stack(skts)
+            skts = torch.stack(skts).repeat(1,3,1,1)
             cs = torch.LongTensor(cs)
             self.validskt = (skts, cs)
         return self.validskt
