@@ -132,7 +132,7 @@ class Solver:
 
         # get validation photos and categories
         self.data.set_phase('valid')
-        data_loader = self.data.get_loader(batch_size=self.config.batch_size, num_workers=self.config.batch_size//2)
+        data_loader = self.data.get_loader(batch_size=self.config.batch_size*4, num_workers=self.config.batch_size)
         phos_feats, phos_cates = [], []
         print('getting features of photos')
         for (phos, cs) in tqdm(data_loader):
