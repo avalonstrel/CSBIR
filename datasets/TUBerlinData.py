@@ -104,10 +104,7 @@ class TUBerlinData(Dataset):
         print('Finish building dataset!')
 
     def __len__(self):
-        if self.phase == 'train':
-            return len(self.train_phos)+len(self.train_skts)
-        elif self.phase == 'valid':
-            return len(self.train_phos)
+        return len(self.train_phos)
 
     def set_phase(self, phase='train'):
         self.phase = phase
@@ -116,7 +113,7 @@ class TUBerlinData(Dataset):
         (fpho, cpho) = self.train_phos[index]
         pho = self.to_tensor(self.randomflip(self.resize(Image.open(fpho))))
         if self.phase == 'train':
-            (fskt, cskt) = self.train_skts[index]
+            (fskt, cskt) = random.choice(self.train_skts)
             skt = self.to_tensor(self.randomflip(self.randomcrop(Image.open(fskt)))).expand(3, self.crop_size, self.crop_size)
         else:
             return pho, torch.LongTensor([cpho])
