@@ -6,7 +6,10 @@ from models import losses
 #from test import test
 from utils import *
 from tqdm import tqdm
-
+from copy import deepcopy
+import resource
+rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
+resource.setrlimit(resource.RLIMIT_NOFILE, (8192, rlimit[1]))
 
 class Solver:
     def __init__(self, config, data, model):
@@ -119,6 +122,7 @@ class Solver:
             self.feats = self.model['net'](torch.cat([skts, phos]))
 
     def valid(self, log):
+        data = deepcopy(self.data)
         self.model['net'].eval()
         valid_skts, valid_cates = self.data.get_valid()
         cate_num = self.data.cate_num
@@ -131,14 +135,18 @@ class Solver:
         skts_feats = torch.cat(skts_feats)
 
         # get validation photos and categories
-        self.data.set_phase('valid')
-        data_loader = self.data.get_loader(batch_size=self.config.batch_size*4, num_workers=self.config.batch_size)
+        data.set_phase('valid')
+        print(len(data))
+        data_loader = data.get_loader(batch_size=self.config.batch_size*2, num_workers=4, shuffle=True)
         phos_feats, phos_cates = [], []
         print('getting features of photos')
-        for (phos, cs) in tqdm(data_loader):
+        for i,(phos, cs) in enumerate(data_loader):
+        #for i in tqdm(range(len(data))):
+        #    (phos, cs) = data[i]
+            print('\r{}/{}'.format(i, len(data_loader)), end='')
             with torch.no_grad():
                 phos_cates.append(cs)
-                phos_feats.append(self.model['net'](phos.to(self.config.device)))
+                phos_feats.append(self.model['net'](phos.to(self.config.device)).cpu())
         phos_feats = torch.cat(phos_feats)
         phos_cates = torch.cat(phos_cates)
 
@@ -150,7 +158,7 @@ class Solver:
             c = valid_cates[i]
             # compute distance
             with torch.no_grad():
-                if self.config.disrance == 'sq':
+                if self.config.distance == 'sq':
                     dist = (phos_feats - skt_feat).pow(2).sum(dim=1)
                 dist = dist.cpu()
                 res = phos_cates[dist.sort(dim=0)[1]] == c

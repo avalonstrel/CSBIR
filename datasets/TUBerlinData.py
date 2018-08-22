@@ -110,8 +110,11 @@ class TUBerlinData(Dataset):
         self.phase = phase
 
     def __getitem__(self, index):
-        (fpho, cpho) = self.train_phos[index]
-        pho = self.to_tensor(self.randomflip(self.resize(Image.open(fpho))))
+        try:
+            (fpho, cpho) = self.train_phos[index]
+            pho = self.to_tensor(self.randomflip(self.resize(Image.open(fpho))))
+        except Exception:
+            print(index, self.train_phos[index])
         if self.phase == 'train':
             (fskt, cskt) = random.choice(self.train_skts)
             skt = self.to_tensor(self.randomflip(self.randomcrop(Image.open(fskt)))).expand(3, self.crop_size, self.crop_size)
