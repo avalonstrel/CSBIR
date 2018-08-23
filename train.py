@@ -10,7 +10,7 @@ from copy import deepcopy
 try:
     import resource
     rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
-    resource.setrlimit(resource.RLIMIT_NOFILE, (8192, rlimit[1]))
+    resource.setrlimit(resource.RLIMIT_NOFILE, (8192*2, rlimit[1]))
 except ModuleNotFoundError:
     pass
 
@@ -104,13 +104,14 @@ class Solver:
 
             ### validation ###
             if (i+1) % self.config.valid_step == 0 and (i+1) // self.config.valid_step > 2:
-                self.valid(log)
+                #self.valid(log)
 
             #if (i+1) % self.config.model_save_step == 0:
             #    ### save models ###
                 save_model(self.model, self.config, log)
                 print('saving models successfully!\n')
-                # save model after validating
+                self.valid(log)
+                # save model before validating
 
             ### update lr ###
             if (i+1) % self.config.model_save_step == 0 and (i+1) > (self.config.num_steps - self.config.num_steps_decay):
