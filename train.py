@@ -171,8 +171,13 @@ class Solver:
             # compute average precision
             k, rightk, precision = 0, 0, []
             while rightk < cate_num[c]:
-                precision.append(res[:k+1].mean().item())
-                k, rightk = k+1, rightk + res[k].item()
+                #precision.append(res[:k+1].mean().item())
+                #k, rightk = k+1, rightk + res[k].item()
+                r = res[k].item()
+                if r:
+                    precision.append(res[:k+1].mean().item())
+                    rightk += 1
+                k += 1
             APs.append(sum(precision)/len(precision))
 
         MAP = sum(APs) / len(APs)
