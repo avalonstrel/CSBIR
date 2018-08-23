@@ -82,7 +82,7 @@ def main():
     model_type = config.model_type.split('_')
     norm = False
     if len(model_type) == 2:
-        norm = str2bool(model_type[1])
+        norm = model_type[1] == 'norm'
     model = {'net':networks[model_type[0]](f_dim=config.feat_dim, norm=norm)}
 
     ##### create dataset #####

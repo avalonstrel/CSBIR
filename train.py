@@ -110,7 +110,7 @@ class Solver:
             #    ### save models ###
                 save_model(self.model, self.config, log)
                 print('saving models successfully!\n')
-                self.valid(log)
+                self.test(log, 'value')
                 # save model before validating
 
             ### update lr ###
