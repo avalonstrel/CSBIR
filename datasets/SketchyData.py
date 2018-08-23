@@ -167,6 +167,7 @@ class SketchyData(Dataset):
 
 
 if __name__ == '__main__':
+    exit(0)
     data_root = "D:\\datasets\\TU-Berlin"
     data = TUBerlinData(data_root, seed=1)
     print(data.source_valid_skts)

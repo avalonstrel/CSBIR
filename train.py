@@ -126,11 +126,23 @@ class Solver:
         if self.feats is None:
             self.feats = self.model['net'](torch.cat([skts, phos]))
 
-    def valid(self, log):
-        print('Start Validation ...')
+    def test(self, log, mode='valid'):
+
+        if mode == 'test':
+            # load model / model to device
+            for key in ('net',):
+                self.model[key] = self.model[key].to(self.config.device)
+            assert self.config.pretrained_model > 0
+            load_model(self.model, self.config)
+        else:
+            print('Start Validation ...')
+
         data = deepcopy(self.data)
         self.model['net'].eval()
-        valid_skts, valid_cates = self.data.get_valid()
+        if mode == 'valid':
+            valid_skts, valid_cates = self.data.get_valid()
+        else:
+            valid_skts, valid_cates = self.data.get_test()
         cate_num = self.data.cate_num
 
         skts_feats = []
@@ -182,7 +194,10 @@ class Solver:
         P200 = sum(P200) / len(P200)
 
         # record
-        save_valid_test_result(self.config, log['step'], MAP, P200, 'valid')
+        if mode == 'valid':
+            save_valid_test_result(self.config, log['step'], MAP, P200, mode)
+        elif mode == 'test':
+            save_valid_test_result(self.config, int(self.config.pretrained_model), MAP, P200, mode)
 
         print('result: MAP:{:.4f} | P200:{:4f}'.format(MAP, P200))
 
@@ -190,29 +205,5 @@ class Solver:
         self.model['net'].train()
 
         return MAP, P200
-
-    def test(self, log):
-        raise NotImplementedError
-        accu, accu_complex = test(self.model, self.data, self.config, self.config.verbose)
-        log['test/top-1'] = accu['top-1']
-        log['test/top-10'] = accu['top-10']
-        self.config.best_res['top-1'] = max(self.config.best_res.get('top-1',0), accu['top-1'])
-        self.config.best_res['top-10'] = max(self.config.best_res.get('top-10',0), accu['top-10'])
-        log['test/multi-top-1'] = accu_complex['top-1']
-        log['test/multi-top-10'] = accu_complex['top-10']
-        self.config.best_res['multi-top-1'] = max(self.config.best_res.get('multi-top-1',0), accu_complex['top-1'])
-        self.config.best_res['multi-top-10'] = max(self.config.best_res.get('multi-top-10',0), accu_complex['top-10'])
-
-
-        print('#################### validation #################')
-        print('#      |       simple       |      complex      #')
-        print('# ---- |  top-1  |  top-10  |  top-1  |  top-10 #')
-        print('# curr | {:.5f} | {:.5f}  | {:.5f} | {:.5f} #'.format(accu['top-1'], accu['top-10'], accu_complex['top-1'], accu_complex['top-10']))
-        print('# best | {:.5f} | {:.5f}  | {:.5f} | {:.5f} #'.format(self.config.best_res['top-1'], self.config.best_res['top-10'],self.config.best_res['multi-top-1'], self.config.best_res['multi-top-10']))
-        print('#################################################')
-
-
-
-
 
 

@@ -92,7 +92,10 @@ def main():
 
     ##### train/test #####
     solver = Solver(config, data, model)
-    solver.train()
+    if config.phase == 'train':
+        solver.train()
+    elif config.phase == 'test':
+        solver.test(None, 'test')
 
 
 if __name__ == '__main__':
