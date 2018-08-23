@@ -44,7 +44,7 @@ class DenseNet169(nn.Module):
         self.norm = kwargs.get('norm', False)
 
     def forward(self, x, mode_flag='pho'):
-        feat = self.features(x)
+        feat = self.nodel(x)
         feat = self.pool(feat).squeeze(3).squeeze(2)
         feat = self.fc(feat)
 
@@ -65,7 +65,7 @@ class Resnet50(nn.Module):
         self.norm = kwargs.get('norm', False)
 
     def forward(self, x, mode_flag='pho'):
-        feat = self.features(x)
+        feat = self.model(x)
         feat = self.pool(feat).squeeze(3).squeeze(2)
         feat = self.fc(feat)
 
@@ -85,7 +85,7 @@ class Resnext50(nn.Module):
         self.norm = kwargs.get('norm', False)
 
     def forward(self, x, mode_flag='pho'):
-        feat = self.features(x)
+        feat = self.model(x)
         feat = self.pool(feat).squeeze(3).squeeze(2)
         feat = self.fc(feat)
 
@@ -105,7 +105,7 @@ class Resnext100(nn.Module):
         self.norm = kwargs.get('norm', False)
 
     def forward(self, x, mode_flag='pho'):
-        feat = self.features(x)
+        feat = self.model(x)
         feat = self.pool(feat).squeeze(3).squeeze(2)
         feat = self.fc(feat)
 
@@ -125,7 +125,7 @@ class Pnasnet5(nn.Module):
         self.norm = kwargs.get('norm', False)
 
     def forward(self, x, mode_flag='pho'):
-        feat = self.features(x)
+        feat = self.model(x)
         feat = self.pool(feat).squeeze(3).squeeze(2)
         feat = self.fc(feat)
 
