@@ -58,7 +58,7 @@ def get_parameter():
     config = parser.parse_args()
 
     # device
-    config.device = torch.device('cuda:0')
+    #config.device = torch.device('cuda:0')
     config.loss_type = config.loss_type.split(',')
     config.loss_ratio = [eval(r) for r in config.loss_ratio.split(',')]    
 
@@ -77,7 +77,7 @@ def main():
     config = get_parameter()
     save_config(config)
     cudnn.benchmark = True
-
+    config.device = torch.device('cuda:0')
     ##### build model #####
     model_type = config.model_type.split('_')
     norm = False

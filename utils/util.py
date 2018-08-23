@@ -54,7 +54,7 @@ def save_config(config):
     if os.path.exists(path):
         os.remove(path)
     with open(path, 'w') as f:
-        json.dump(vars(config), vars(config))
+        json.dump(vars(config), f)
 
 
 def denorm(x):
