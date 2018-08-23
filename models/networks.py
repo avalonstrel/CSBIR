@@ -9,7 +9,7 @@ from .model_utils import *
 import pretrainedmodels
 
 
-class DenseNet169(torch.nn.Module):
+class DenseNet169_(torch.nn.Module):
     def __init__(self, f_dim=512, pretrained=True, **kwargs):
         super(DenseNet169, self).__init__()
         
@@ -32,20 +32,46 @@ class DenseNet169(torch.nn.Module):
             feat = F.normalize(feat, p=2, dim=1)
         return feat
 
+class DenseNet169(nn.Module):
+    def __init__(self, f_dim, pretrained=True, **kwargs):
+        super(DenseNet169, self).__init__()
+
+        model_name = 'densenet169' # could be fbresnet152 or inceptionresnetv2
+        self.model = pretrainedmodels.__dict__[model_name](num_classes=1000, pretrained='imagenet').features
+        self.pool = nn.AvgPool2d(kernel_size=7, stride=1, padding=0)
+        self.fc = nn.Linear(2048, f_dim, bias=True)
+
+        self.norm = kwargs.get('norm', False)
+
+    def forward(self, x, mode_flag='pho'):
+        feat = self.features(x)
+        feat = self.pool(feat).squeeze(3).squeeze(2)
+        feat = self.fc(feat)
+
+        if self.norm:
+            feat = F.normalize(feat, p=2, dim=1)
+        return feat 
+
+
 class Resnet50(nn.Module):
     def __init__(self, f_dim, pretrained=True, **kwargs):
         super(Resnet50, self).__init__()
 
-        self.model = resnet50(pretrained=pretrained, num_classes=f_dim)
+        model_name = 'resnet50' # could be fbresnet152 or inceptionresnetv2
+        self.model = pretrainedmodels.__dict__[model_name](num_classes=1000, pretrained='imagenet').features
+        self.pool = nn.AvgPool2d(kernel_size=8, stride=1, padding=0)
+        self.fc = nn.Linear(2048, f_dim, bias=True)
+
         self.norm = kwargs.get('norm', False)
 
     def forward(self, x, mode_flag='pho'):
-        feat = self.model(x)
+        feat = self.features(x)
+        feat = self.pool(feat).squeeze(3).squeeze(2)
+        feat = self.fc(feat)
 
         if self.norm:
             feat = F.normalize(feat, p=2, dim=1)
-        return feat        
-
+        return feat 
 
 class Resnext50(nn.Module):
     def __init__(self, f_dim, pretrained=True, **kwargs):
