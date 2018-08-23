@@ -1,3 +1,3 @@
 from .TUBerlinData import TUBerlinData
-
-datasets = {'TUBerlin':TUBerlinData}
+from .SketchyData import SketchyData
+datasets = {'TUBerlin':TUBerlinData, 'sketchy':SketchyData}

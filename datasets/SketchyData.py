@@ -12,6 +12,7 @@ class SketchyData(Dataset):
         self.photo_root = os.path.join(root_path, '256x256', 'photo', 'tx_000100000000')
         self.sketch_root = os.path.join(root_path, '256x256', 'sketch', 'tx_000100000000')
         self.crop_size = crop_size
+        self.seed = kwargs.get('seed', None)
 
         # get invalid sketches
         info_root = os.path.join(root_path, 'info')
@@ -33,7 +34,7 @@ class SketchyData(Dataset):
             m, c = c.split('/')
             cates[m] = cates.get(m, [])+ [c]
             self.cate2idx[c] = i
-        self.num_cates = len(cates.keys())
+        self.num_cates = len(cates_raw)
 
 		# rearrange cate according to mode
         assert mode in ('std', 'fewshot-train', 'fewshot-finetune', 'zeroshot-train')
@@ -76,10 +77,11 @@ class SketchyData(Dataset):
         if self.mode == 'std':
             for c in cates['source']:
                 self.source_train_phos[c] = phos[c]
-                self.cate_num[c] = len(phos[c])
+                self.cate_num[self.cate2idx[c]] = len(phos[c])
+                random.seed(self.seed)
                 random.shuffle(skts[c])
-                self.source_train_skts[c] = skts[c][:-20]
-                self.source_valid_skts[c] = skts[c][-20:-10]
+                self.source_train_skts[c] = skts[c][:-11]
+                self.source_valid_skts[c] = skts[c][-11:-10]
                 self.target_test_skts[c] = skts[c][-10:]
         else:
             raise NotImplementedError('Currently, only standard mode is supported.')
@@ -94,6 +96,7 @@ class SketchyData(Dataset):
             idx = self.cate2idx[c]
             for f in clst:
                 self.train_skts.append((f, idx))
+        random.seed(None)
         random.shuffle(self.train_phos)
         random.shuffle(self.train_skts)
 
@@ -114,7 +117,7 @@ class SketchyData(Dataset):
         print('Finish building dataset!')
 
     def __len__(self):
-        return len(self.train_phos)+len(self.train_skts)
+        return len(self.train_phos)
 
     def set_phase(self, phase='train'):
         self.phase = phase
@@ -122,11 +125,12 @@ class SketchyData(Dataset):
     def __getitem__(self, index):
         (fpho, cpho) = self.train_phos[index]
         pho = self.to_tensor(self.randomflip(self.resize(Image.open(fpho))))
+
         if self.phase == 'train':
-            (fskt, cskt) = self.train_skts[index]
+            (fskt, cskt) = random.choice(self.train_skts)
             skt = self.to_tensor(self.randomflip(self.randomcrop(Image.open(fskt)))).expand(3, self.crop_size, self.crop_size)
         else:
-            skt, cskt = None, -1
+            return pho, torch.LongTensor([cpho])
 
         cates = torch.LongTensor([cskt, cpho])
         return skt, pho, cates
@@ -140,6 +144,7 @@ class SketchyData(Dataset):
                 cs.append(c)
 
             skts = torch.stack(skts)
+            skts = skts.expand(skts.size(0),3,skts.size(2),skts.size(3))
             cs = torch.LongTensor(cs)
             self.validskt = (skts, cs)
         return self.validskt
@@ -152,7 +157,7 @@ class SketchyData(Dataset):
                 skts.append(self.to_tensor(self.centercrop(Image.open(fskt))))
                 cs.append(c)
 
-            skts = torch.stack(skts)
+            skts = torch.stack(skts).repeat(1,3,1,1)
             cs = torch.LongTensor(cs)
             self.validskt = (skts, cs)
         return self.validskt
@@ -160,6 +165,11 @@ class SketchyData(Dataset):
     def get_loader(self, **kwargs):
         return DataLoader(self, **kwargs)
 
+
+if __name__ == '__main__':
+    data_root = "D:\\datasets\\TU-Berlin"
+    data = TUBerlinData(data_root, seed=1)
+    print(data.source_valid_skts)
 
 
 
