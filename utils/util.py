@@ -2,6 +2,7 @@ import os
 import torch
 import csv
 import random
+import json
 
 def shuffle(ts, dim=0, inv=False):
     if inv:
@@ -34,13 +35,27 @@ def save_log(log, config, print_items=[]):
 
     if config.print_log:
         logg = ''
-        logg += 'step:[{}/{}], time:{:.7f}\n'.format(log['step'], log['nsteps'], log['time_elapse'])
+        logg += 'step:[{}/{}]  time:{:.7f}  '.format(log['step'], log['nsteps'], log['time_elapse'])
         if print_items:
             for items in print_items:
                 for item in items:
                     logg += '{}:{:.4f}  '.format(item, log['loss/%s'%item])
-                logg += '\n'
-        print(logg)
+                #logg += '\n'
+        print('\r%s'%logg, end='')
+
+def save_valid_test_result(config, step, MAP, P200, phase):
+    log_path = os.path.join(config.log_path, 'res.txt')
+    with open(log_path, 'a+') as f:
+        info = '[%s]\t'%phase + 'step:{}\tMAP:{:.4f}\tP200:{:.4f}\n'.format(step,MAP,P200)
+        f.write(info)
+
+def save_config(config):
+    path = os.path.join(config.log_path, 'config.sh')
+    if os.path.exists(path):
+        os.remove(path)
+    with open(path, 'w') as f:
+        json.dump(vars(config), vars(config))
+
 
 def denorm(x):
     x = ((x+1)/2)

@@ -12,6 +12,7 @@ class TUBerlinData(Dataset):
         self.photo_root = os.path.join(root_path, 'photos')
         self.sketch_root = os.path.join(root_path, 'sketches')
         self.crop_size = crop_size
+        self.seed = kwargs.get('seed', None)
 
         # load train/test cates
         with open(os.path.join(root_path, 'cate_sep.txt'), 'r') as f:
@@ -67,6 +68,7 @@ class TUBerlinData(Dataset):
             for c in cates['source']:
                 self.source_train_phos[c] = phos[c]
                 self.cate_num[self.cate2idx[c]] = len(phos[c])
+                random.seed(self.seed)
                 random.shuffle(skts[c])
                 self.source_train_skts[c] = skts[c][:-11]
                 self.source_valid_skts[c] = skts[c][-11:-10]
@@ -84,6 +86,7 @@ class TUBerlinData(Dataset):
             idx = self.cate2idx[c]
             for f in clst:
                 self.train_skts.append((f, idx))
+        random.seed(None)
         random.shuffle(self.train_phos)
         random.shuffle(self.train_skts)
 
@@ -154,5 +157,8 @@ class TUBerlinData(Dataset):
         return DataLoader(self, **kwargs)
 
 
-
+if __name__ == '__main__':
+    data_root = "D:\\datasets\\TU-Berlin"
+    data = TUBerlinData(data_root, seed=1)
+    print(data.source_valid_skts)
 

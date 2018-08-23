@@ -7,9 +7,12 @@ from models import losses
 from utils import *
 from tqdm import tqdm
 from copy import deepcopy
-import resource
-rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
-resource.setrlimit(resource.RLIMIT_NOFILE, (8192, rlimit[1]))
+try:
+    import resource
+    rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
+    resource.setrlimit(resource.RLIMIT_NOFILE, (8192, rlimit[1]))
+except ModuleNotFoundError:
+    pass
 
 class Solver:
     def __init__(self, config, data, model):
@@ -93,20 +96,21 @@ class Solver:
 
             self.feats = None
 
-            if (i+1) % self.config.valid_step == 0:
-                self.valid(log)
-
             ### save log ###
             if (i+1) % (self.config.log_step) == 0:
                 log['time_elapse'] = time.time() - start_time
                 print_item = [list(set(['softmax', 'sphere', 'centre']).intersection(set(self.config.loss_type)))]
                 save_log(log, self.config, print_item)
 
+            ### validation ###
+            if (i+1) % self.config.valid_step == 0 and (i+1) // self.config.valid_step > 2:
+                self.valid(log)
 
-            if (i+1) % self.config.model_save_step == 0:
-                ### save models ###
+            #if (i+1) % self.config.model_save_step == 0:
+            #    ### save models ###
                 save_model(self.model, self.config, log)
                 print('saving models successfully!\n')
+                # save model after validating
 
             ### update lr ###
             if (i+1) % self.config.model_save_step == 0 and (i+1) > (self.config.num_steps - self.config.num_steps_decay):
@@ -122,6 +126,7 @@ class Solver:
             self.feats = self.model['net'](torch.cat([skts, phos]))
 
     def valid(self, log):
+        print('Start Validation ...')
         data = deepcopy(self.data)
         self.model['net'].eval()
         valid_skts, valid_cates = self.data.get_valid()
@@ -136,16 +141,10 @@ class Solver:
 
         # get validation photos and categories
         data.set_phase('valid')
-        print(len(data))
         data_loader = data.get_loader(batch_size=self.config.batch_size*2, num_workers=4, shuffle=True)
         phos_feats, phos_cates = [], []
-        print('getting features of photos')
         for i,(phos, cs) in enumerate(data_loader):
-        #for i in tqdm(range(len(data))):
-        #    (phos, cs) = data[i]
-            #if i > 100:
-            #    break
-            print('\r{}/{}'.format(i, len(data_loader)), end='')
+            print('\rgetting features of photos: [{}/{}]'.format(i, len(data_loader)), end='')
             with torch.no_grad():
                 phos_cates.append(cs)
                 phos_feats.append(self.model['net'](phos.to(self.config.device)))
@@ -154,7 +153,7 @@ class Solver:
 
         # compute MAP and precision@200
         APs, P200 = [], []
-        print('validating')
+        print('\nvalidating', end='')
         for i in tqdm(range(len(skts_feats))):
             skt_feat = skts_feats[i].unsqueeze(0)
             c = valid_cates[i].item()
@@ -171,8 +170,6 @@ class Solver:
             # compute average precision
             k, rightk, precision = 0, 0, []
             while rightk < cate_num[c]:
-                #precision.append(res[:k+1].mean().item())
-                #k, rightk = k+1, rightk + res[k].item()
                 r = res[k].item()
                 if r:
                     precision.append(res[:k+1].mean().item())
@@ -184,14 +181,14 @@ class Solver:
         P200 = sum(P200) / len(P200)
 
         # record
-        log['valid/MAP'] = MAP
-        log['valid/P200'] = P200
+        save_valid_test_result(self.config, log['step'], MAP, P200, 'valid')
 
-        print('####### Validation ######')
-        print('MAP:{:.4f} | P200:{:4f}'.format(MAP, P200))
+        print('result: MAP:{:.4f} | P200:{:4f}'.format(MAP, P200))
 
         self.data.set_phase('train')
         self.model['net'].train()
+
+        return MAP, P200
 
     def test(self, log):
         raise NotImplementedError

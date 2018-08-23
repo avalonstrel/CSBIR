@@ -4,8 +4,9 @@ import os
 import argparse
 from models import networks
 from datasets import datasets
-from utils import makedir
+from utils import makedir, save_config
 from train import Solver
+import json
 
 def str2bool(s):
     return s.lower() == 'true'
@@ -18,6 +19,7 @@ def get_parameter():
     parser.add_argument('--data_root', type=str, required=1)
     parser.add_argument('--obj', type=str, default='TUBerlin')
     parser.add_argument('--crop_size', type=int, default=225)
+    parser.add_argument('--seed', type=int, default=666)
 
     # phase
     parser.add_argument('--phase', type=str, default='train')
@@ -73,6 +75,7 @@ def get_parameter():
 
 def main():
     config = get_parameter()
+    save_config(config)
     cudnn.benchmark = True
 
     ##### build model #####
@@ -83,7 +86,8 @@ def main():
     model = {'net':networks[model_type[0]](f_dim=config.feat_dim, norm=norm)}
 
     ##### create dataset #####
-    data = datasets[config.obj](config.data_root, config.crop_size)
+    seed = config.seed if config.seed > 0 else None
+    data = datasets[config.obj](config.data_root, config.crop_size, seed=seed)
     config.c_dim = data.num_cates
 
     ##### train/test #####
