@@ -118,7 +118,7 @@ class Solver:
 
 
     def compute_feat(self, skts, phos):
-        if not self.feats:
+        if self.feats is None:
             self.feats = self.model['net'](torch.cat([skts, phos]))
 
     def valid(self, log):
