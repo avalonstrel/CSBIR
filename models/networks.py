@@ -20,7 +20,7 @@ class DenseNet169_(torch.nn.Module):
     def forward(self, x, mode_flag='train'):
 
         if self.siamese:
-            feat = self.model(x)
+            feat = self.model.features(x)
         else:
             if mode_flag == 'train':
                 x = x.split(x.size(0)//2)
@@ -37,14 +37,14 @@ class DenseNet169(nn.Module):
         super(DenseNet169, self).__init__()
 
         model_name = 'densenet169' # could be fbresnet152 or inceptionresnetv2
-        self.model = pretrainedmodels.__dict__[model_name](num_classes=1000, pretrained='imagenet').features
+        self.model = pretrainedmodels.__dict__[model_name](num_classes=1000, pretrained='imagenet')
         self.pool = nn.AvgPool2d(kernel_size=7, stride=1, padding=0)
         self.fc = nn.Linear(2048, f_dim, bias=True)
 
         self.norm = kwargs.get('norm', False)
 
     def forward(self, x, mode_flag='pho'):
-        feat = self.nodel(x)
+        feat = self.model.features(x)
         feat = self.pool(feat).squeeze(3).squeeze(2)
         feat = self.fc(feat)
 
@@ -58,14 +58,14 @@ class Resnet50(nn.Module):
         super(Resnet50, self).__init__()
 
         model_name = 'resnet50' # could be fbresnet152 or inceptionresnetv2
-        self.model = pretrainedmodels.__dict__[model_name](num_classes=1000, pretrained='imagenet').features
+        self.model = pretrainedmodels.__dict__[model_name](num_classes=1000, pretrained='imagenet')
         self.pool = nn.AvgPool2d(kernel_size=8, stride=1, padding=0)
         self.fc = nn.Linear(2048, f_dim, bias=True)
 
         self.norm = kwargs.get('norm', False)
 
     def forward(self, x, mode_flag='pho'):
-        feat = self.model(x)
+        feat = self.model.features(x)
         feat = self.pool(feat).squeeze(3).squeeze(2)
         feat = self.fc(feat)
 
@@ -78,14 +78,14 @@ class Resnext50(nn.Module):
         super(Resnext50, self).__init__()
 
         model_name = 'se_resnext50_32x4d' # could be fbresnet152 or inceptionresnetv2
-        self.model = pretrainedmodels.__dict__[model_name](num_classes=1000, pretrained='imagenet').features
+        self.model = pretrainedmodels.__dict__[model_name](num_classes=1000, pretrained='imagenet')
         self.pool = nn.AvgPool2d(kernel_size=7, stride=1, padding=0)
         self.fc = nn.Linear(2048, f_dim, bias=True)
 
         self.norm = kwargs.get('norm', False)
 
     def forward(self, x, mode_flag='pho'):
-        feat = self.model(x)
+        feat = self.model.features(x)
         feat = self.pool(feat).squeeze(3).squeeze(2)
         feat = self.fc(feat)
 
@@ -98,14 +98,14 @@ class Resnext100(nn.Module):
         super(Resnext100, self).__init__()
 
         model_name = 'se_resnext101_32x4d' # could be fbresnet152 or inceptionresnetv2
-        self.model = pretrainedmodels.__dict__[model_name](num_classes=1000, pretrained='imagenet').features
+        self.model = pretrainedmodels.__dict__[model_name](num_classes=1000, pretrained='imagenet')
         self.pool = nn.AvgPool2d(kernel_size=7, stride=1, padding=0)
         self.fc = nn.Linear(2048, f_dim, bias=True)
 
         self.norm = kwargs.get('norm', False)
 
     def forward(self, x, mode_flag='pho'):
-        feat = self.model(x)
+        feat = self.model.features(x)
         feat = self.pool(feat).squeeze(3).squeeze(2)
         feat = self.fc(feat)
 
@@ -118,14 +118,14 @@ class Pnasnet5(nn.Module):
         super(Pnasnet5, self).__init__()
 
         model_name = 'pnasnet5large' # could be fbresnet152 or inceptionresnetv2
-        self.model = pretrainedmodels.__dict__[model_name](num_classes=1000, pretrained='imagenet').features
+        self.model = pretrainedmodels.__dict__[model_name](num_classes=1000, pretrained='imagenet')
         self.pool = nn.AvgPool2d(kernel_size=7, stride=1, padding=0)
         self.fc = nn.Linear(4320, f_dim, bias=True)
 
         self.norm = kwargs.get('norm', False)
 
     def forward(self, x, mode_flag='pho'):
-        feat = self.model(x)
+        feat = self.model.features(x)
         feat = self.pool(feat).squeeze(3).squeeze(2)
         feat = self.fc(feat)
 
