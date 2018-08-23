@@ -4,3 +4,4 @@
 *.ipynb
 *.pyc
 *.csv
+expr/log/config.sh
