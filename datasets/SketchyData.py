@@ -158,7 +158,8 @@ class SketchyData(Dataset):
                 skts.append(self.to_tensor(self.centercrop(Image.open(fskt))))
                 cs.append(c)
 
-            skts = torch.stack(skts).repeat(1,3,1,1)
+            skts = torch.stack(skts)
+            skts = skts.expand(skts.size(0),3,skts.size(2),skts.size(3))
             cs = torch.LongTensor(cs)
             self.validskt = (skts, cs)
         return self.validskt
