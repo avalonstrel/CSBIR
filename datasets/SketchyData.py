@@ -125,6 +125,7 @@ class SketchyData(Dataset):
     def __getitem__(self, index):
         (fpho, cpho) = self.train_phos[index]
         pho = self.to_tensor(self.randomflip(self.resize(Image.open(fpho))))
+        pho = pho.expand(3, self.crop_size, self.crop_size)
 
         if self.phase == 'train':
             (fskt, cskt) = random.choice(self.train_skts)
