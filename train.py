@@ -192,7 +192,7 @@ class Solver:
                     else:
                         dist1 = (phos_feats - skt_feat).pow(2).sum(dim=1)
                         dist2 = (phos_feats - skt_feat[:,:,[1,0]]).pow(2).sum(dim=1)
-                        dist = (dist1.mean(dim=2)+dist2.mean(dim=2))/2
+                        dist = (dist1.mean(dim=1)+dist2.mean(dim=1))/2
                 #dist = dist.cpu()
                 res = phos_cates[dist.sort(dim=0)[1]] == c
                 res = res.float()
