@@ -13,6 +13,8 @@ try:
     resource.setrlimit(resource.RLIMIT_NOFILE, (8192*2, rlimit[1]))
 except ModuleNotFoundError:
     pass
+except ValueError:
+    pass
 
 class Solver:
     def __init__(self, config, data, model):
