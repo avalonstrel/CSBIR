@@ -29,6 +29,7 @@ def get_parameter():
     # model
     parser.add_argument('--model_type', type=str, default='densenet169')
     parser.add_argument('--distance', type=str, default='sq')
+    parser.add_argument('--test_dist', type=str, default='min')
     parser.add_argument('--feat_dim', type=int, default=512)
 
     # train
