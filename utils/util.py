@@ -9,7 +9,7 @@ def shuffle(ts, dim=0, inv=False):
         idx = torch.arange(ts.size(dim)-1,-1,step=-1,device=ts.device)
     else:
         idx = torch.randperm(ts.size(dim)).to(ts.device)
-    return ts[idx.long()]
+    return ts.index_select(index=idx.long(), dim=dim)
 
 def random_crop(ts, dim, scale):
     if isinstance(dim, int):

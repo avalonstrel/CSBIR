@@ -4,7 +4,7 @@ angel
 - ant
 apple
 arm
-? armchair
+- armchair
 ashtray
 - axe
 - backpack
@@ -38,213 +38,213 @@ bush
 cactus
 cake
 calculator
-camel
-camera
-candle
-cannon
-canoe
-car (sedan)
+- camel
+- camera
+- candle
+- cannon
+- canoe
+- car (sedan)
 carrot
-castle
-cat
-cell phone
-chair
+- castle
+- cat
+- cell phone
+- chair
 chandelier
-church
+- church
 cigarette
 cloud
 comb
-computer monitor
-computer_mouse
-couch
+- computer monitor
+- computer_mouse
+- couch
 cow
-crab
-crane (machine)
-crocodile
+- crab
+- crane (machine)
+- crocodile
 crown
-cup
+- cup
 diamond
-dog
+- dog
 dolphin
 donut
-door
+- door
 door handle
 dragon
 duck
 ear
-elephant
-envelope
+- elephant
+- envelope
 eye
-eyeglasses
+- eyeglasses
 face
-fan
+- fan
 feather
 fire hydrant
-fish
+- fish
 flashlight
 floor lamp
 flower with stem
-flying bird
+- flying bird
 flying saucer
 foot
 fork
-frog
-frying_pan
+- frog
+- frying_pan
 giraffe
 grapes
 grenade
-guitar
+- guitar
 hamburger
-hammer
+- hammer
 hand
-harp
-hat
+- harp
+- hat
 head
 head_phones
-hedgehog
+- hedgehog
 helicopter
-helmet
-horse
-hot air balloon
-hot_dog
-hourglass
-house
+- helmet
+- horse
+- hot air balloon
+- hot_dog
+- hourglass
+- house
 human_skeleton
-ice_cream_cone
-ipod
-kangaroo
+- ice_cream_cone
+- ipod
+- kangaroo
 key
-keyboard
-knife
+- keyboard
+- knife
 ladder
-laptop
+- laptop
 leaf
 lightbulb
-lighter
-lion
-lobster
-loudspeaker
-mailbox
+- lighter
+- lion
+- lobster
+- loudspeaker
+- mailbox
 megaphone
 mermaid
-microphone
+- microphone
 microscope
-monkey
+- monkey
 moon
 mosquito
 motorbike
 mouse (animal)
 mouth
-mug
-mushroom
+- mug
+- mushroom
 nose
 octopus
-owl
+- owl
 palm tree
-panda
+- panda
 paper clip
-parachute
-parking meter
+- parachute
+- parking meter
 parrot
 pear
-pen
-penguin
+- pen
+- penguin
 person sitting
 person walking
-piano
-pickup truck
-pig
+- piano
+- pickup truck
+- pig
 pigeon
-pineapple
+- pineapple
 pipe (for smoking)
-pizza
-potted plant
+- pizza
+- potted plant
 power outlet
 present
-pretzel
-pumpkin
-purse
-rabbit
-race car
-radio
+- pretzel
+- pumpkin
+- purse
+- rabbit
+- race car
+- radio
 rainbow
-revolver
-rifle
+- revolver
+- rifle
 rollerblades
-rooster
+- rooster
 sailboat
 santa claus
 satellite
 satellite dish
-saxophone
+- saxophone
 scissors
-scorpion
-screwdriver
-sea turtle
+- scorpion
+- screwdriver
+- sea turtle
 seagull
-shark
-sheep
-ship
-shoe
-shovel
+- shark
+- sheep
+- ship
+- shoe
+- shovel
 skateboard
 skull
 skyscraper
-snail
-snake
+- snail
+- snake
 snowboard
 snowman
-socks
-space shuttle
-speed_boat
-spider
-sponge bob
-spoon
-squirrel
-standing bird
+- socks
+- space shuttle
+- speed_boat
+- spider
+- sponge bob
+- spoon
+- squirrel
+- standing bird
 stapler
-strawberry
+- strawberry
 streetlight
-submarine
+- submarine
 suitcase
 sun
-suv
-swan
+- suv
+- swan
 sword
-syringe
-t_shirt
-table
-tablelamp
-teacup
-teapot
-teddy_bear
-telephone
-tennis_racket
-tent
-tiger
+- syringe
+- t_shirt
+- table
+- tablelamp
+- teacup
+- teapot
+- teddy_bear
+- telephone
+- tennis_racket
+- tent
+- tiger
 tire
-toilet
+- toilet
 tomato
 tooth
 toothbrush
-tractor
-traffic light
-train
+- tractor
+- traffic light
+- train
 tree
-trombone
-trousers
-truck
-trumpet
-tv
-umbrella
-van
-vase
-violin
+- trombone
+- trousers
+- truck
+- trumpet
+- tv
+- umbrella
+- van
+- vase
+- violin
 walkie talkie
-wheel
-wheelbarrow
+- wheel
+- wheelbarrow
 windmill
-wine_bottle
-wineglass
-wrist_watch
-zebra
+- wine_bottle
+- wineglass
+- wrist_watch
+- zebra
