@@ -14,7 +14,7 @@ try:
 except ModuleNotFoundError:
     pass
 except ValueError:
-    pass
+    resource.setrlimit(resource.RLIMIT_NOFILE, (4096, rlimit[1]))
 
 class Solver:
     def __init__(self, config, data, model):
