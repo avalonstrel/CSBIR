@@ -151,9 +151,12 @@ class Solver:
         valid_skts = valid_skts.split(self.config.batch_size*4)
         with torch.no_grad():
             for skts in valid_skts:
-                skts = skts.to(self.config.device)
-                skts = torch.cat([skts, shuffle(skts, dim=2, inv=True)])
-                feat = torch.stack(self.model['net'](skts).split(skts.size(0)), dim=2)
+                if mode == 'valid':
+                    feat = self.model['net'](skts.to(self.config.device))
+                else:
+                    skts = skts.to(self.config.device)
+                    skts = torch.cat([skts, shuffle(skts, dim=2, inv=True)])
+                    feat = torch.stack(self.model['net'](skts).split(skts.size(0)), dim=2)
                 skts_feats.append(feat)
         skts_feats = torch.cat(skts_feats)
 
@@ -165,9 +168,12 @@ class Solver:
             print('\rgetting features of photos: [{}/{}]'.format(i, len(data_loader)), end='')
             with torch.no_grad():
                 phos_cates.append(cs)
-                phos = phos.to(self.config.device)
-                phos = torch.cat([phos, shuffle(phos, dim=2, inv=True)])
-                feat = torch.stack(self.model['net'](phos).split(phos.size(0)), dim=2)
+                if mode == 'valid':
+                    feat = self.model['net'](phos.to(self.config.device))
+                else:
+                    phos = phos.to(self.config.device)
+                    phos = torch.cat([phos, shuffle(phos, dim=2, inv=True)])
+                    feat = torch.stack(self.model['net'](phos).split(phos.size(0)), dim=2)
                 phos_feats.append(feat)
         phos_feats = torch.cat(phos_feats)
         phos_cates = torch.cat(phos_cates).to(self.config.device)
@@ -181,9 +187,12 @@ class Solver:
             # compute distance
             with torch.no_grad():
                 if self.config.distance == 'sq':
-                    dist1 = (phos_feats - skt_feat).pow(2).sum(dim=1)
-                    dist2 = (phos_feats - skt_feat[:,:,[1,0]]).pow(2).sum(dim=1)
-                    dist = (dist1.mean(dim=2)+dist2.mean(dim=2))/2
+                    if mode == 'valid':
+                        dist = (phos_feats - skt_feat).pow(2).sum(dim=1)
+                    else:
+                        dist1 = (phos_feats - skt_feat).pow(2).sum(dim=1)
+                        dist2 = (phos_feats - skt_feat[:,:,[1,0]]).pow(2).sum(dim=1)
+                        dist = (dist1.mean(dim=2)+dist2.mean(dim=2))/2
                 #dist = dist.cpu()
                 res = phos_cates[dist.sort(dim=0)[1]] == c
                 res = res.float()
