@@ -128,30 +128,32 @@ class Solver:
         if self.feats is None:
             self.feats = self.model['net'](torch.cat([skts, phos]))
 
-    def test(self, log, mode='valid'):
+    def test(self, log, phase='valid'):
 
-        if mode == 'test':
+        # prepare
+        if phase == 'test':
             # load model / model to device
             for key in ('net',):
                 self.model[key] = self.model[key].to(self.config.device)
             assert self.config.pretrained_model > 0
             load_model(self.model, self.config)
+            print('Start Testing ...')
         else:
             print('Start Validation ...')
 
+        # deal with data
         data = deepcopy(self.data)
         self.model['net'].eval()
-        if mode == 'valid':
-            valid_skts, valid_cates = self.data.get_valid()
-        else:
-            valid_skts, valid_cates = self.data.get_test()
+        data.set_phase(phase)
+        valid_skts, valid_cates = self.data.get_skts()
         cate_num = self.data.cate_num
 
+        ######### compute sketch features #########
         skts_feats = []
         valid_skts = valid_skts.split(self.config.batch_size*4)
         with torch.no_grad():
             for skts in valid_skts:
-                if mode == 'valid':
+                if phase == 'valid':
                     feat = self.model['net'](skts.to(self.config.device))
                 else:
                     skts = skts.to(self.config.device)
@@ -160,15 +162,16 @@ class Solver:
                 skts_feats.append(feat)
         skts_feats = torch.cat(skts_feats)
 
+
+        ######### compute photo features #########
         # get validation photos and categories
-        data.set_phase('valid')
         data_loader = data.get_loader(batch_size=self.config.batch_size*2, num_workers=4, shuffle=True)
         phos_feats, phos_cates = [], []
         for i,(phos, cs) in enumerate(data_loader):
             print('\rgetting features of photos: [{}/{}]'.format(i, len(data_loader)), end='')
             with torch.no_grad():
                 phos_cates.append(cs)
-                if mode == 'valid':
+                if phase == 'valid':
                     feat = self.model['net'](phos.to(self.config.device))
                 else:
                     phos = phos.to(self.config.device)
@@ -177,9 +180,8 @@ class Solver:
                 phos_feats.append(feat)
         phos_feats = torch.cat(phos_feats)
         phos_cates = torch.cat(phos_cates).to(self.config.device)
-        
-        print(phos_feats.shape, skts_feats.shape)
-        # compute MAP and precision@200
+
+        ######### compute metric (MAP, precision@200) #########
         APs, P200 = [], []
         print('\nvalidating', end='')
         for i in tqdm(range(len(skts_feats))):
@@ -188,7 +190,7 @@ class Solver:
             # compute distance
             with torch.no_grad():
                 if self.config.distance == 'sq':
-                    if mode == 'valid':
+                    if phase == 'valid':
                         dist = (phos_feats - skt_feat).pow(2).sum(dim=1)
                     else:
                         dist1 = (phos_feats - skt_feat[:,:,:1]).pow(2).sum(dim=1).cpu()
@@ -200,9 +202,9 @@ class Solver:
                             dist = dist.mean(dim=1)
                         elif self.config.test_dist == 'min':
                             dist = dist.min(dim=1)[0]
-                #dist = dist.to(self.config.device)
                 res = phos_cates[dist.sort(dim=0)[1]] == c
                 res = res.float()
+
             # compute p@200
             P200.append(res[:200].mean().item())
 
@@ -216,17 +218,19 @@ class Solver:
                 k += 1
             APs.append(sum(precision)/len(precision))
 
+        # final result
         MAP = sum(APs) / len(APs)
         P200 = sum(P200) / len(P200)
 
         # record
-        if mode == 'valid':
-            save_valid_test_result(self.config, log['step'], MAP, P200, mode)
-        elif mode == 'test':
-            save_valid_test_result(self.config, int(self.config.pretrained_model), MAP, P200, mode)
+        if phase == 'valid':
+            save_valid_test_result(self.config, log['step'], MAP, P200, phase)
+        elif phase == 'test':
+            save_valid_test_result(self.config, int(self.config.pretrained_model), MAP, P200, phase)
 
         print('result: MAP:{:.4f} | P200:{:4f}'.format(MAP, P200))
 
+        # recover state
         self.data.set_phase('train')
         self.model['net'].train()
 

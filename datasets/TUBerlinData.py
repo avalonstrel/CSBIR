@@ -49,7 +49,7 @@ class TUBerlinData(Dataset):
 
     def build(self, cates):
         self.cate_num = {}
-        print('Building dataset ...')
+        print('Building dataset ...', end='\r')
         self.source_train_phos = {}
         self.source_train_skts = {}
         self.source_valid_skts = {}
@@ -73,51 +73,91 @@ class TUBerlinData(Dataset):
                 self.source_train_skts[c] = skts[c][:-11]
                 self.source_valid_skts[c] = skts[c][-11:-10]
                 self.target_test_skts[c] = skts[c][-10:]
+        elif self.mode == 'zeroshot':
+            for c in cates['source']:
+                self.source_train_phos[c] = phos[c]
+                random.shuffle(skts[c])
+                self.source_train_skts[c] = skts[c][:-1]
+                self.source_valid_skts[c] = skts[c][-1:]
+
+            for c in cates['target']:
+                self.target_train_phos[c] = phos[c]
+                self.cate_num[self.cate2idx[c]] = len(phos[c])
+                self.target_test_skts = skts[c]
+
+        elif self.mode.startswith('fewshot'):
+            shot = eval(self.mode.split('_')[1])
+            for c in cates['source']:
+                self.source_train_phos[c] = phos[c]
+                random.shuffle(skts[c])
+                self.source_train_skts[c] = skts[c][:-1]
+                self.source_valid_skts[c] = skts[c][-1:]
+
+            for c in cates['target']:
+                self.target_train_phos[c] = phos[c]
+                self.cate_num[self.cate2idx[c]] = len(phos[c])
+                self.target_train_skts[c] = skts[c][:-shot]
+                self.target_test_skts[c] = skts[c][-shot:]
         else:
-            raise NotImplementedError('Currently, only standard mode is supported.')
+            raise ValueError("mode should be 'std' or 'fewshot_x'(x is the number of shots) or 'zeroshot'")
 
-        self.train_phos = []
-        self.train_skts = []
-        for c, clst in self.source_train_phos.items():
-            idx = self.cate2idx[c]
-            for f in clst:
-                self.train_phos.append((f, idx))
-        for c, clst in self.source_train_skts.items():
-            idx = self.cate2idx[c]
-            for f in clst:
-                self.train_skts.append((f, idx))
         random.seed(None)
-        random.shuffle(self.train_phos)
-        random.shuffle(self.train_skts)
-
-        self.valid_skts = []
-        for c, clst in self.source_valid_skts.items():
-            idx = self.cate2idx[c]
-            for f in clst:
-                self.valid_skts.append((f, idx))
-        random.shuffle(self.valid_skts)        
-
-        self.test_skts = []
-        for c, clst in self.target_test_skts.items():
-            idx = self.cate2idx[c]
-            for f in clst:
-                self.test_skts.append((f, idx))    
-        random.shuffle(self.test_skts)    
-
         print('Finish building dataset!')
 
     def __len__(self):
-        return len(self.train_phos)
+        return len(self.phos)
 
     def set_phase(self, phase='train'):
         self.phase = phase
 
+        if self.mode == 'std':
+            assert phase in ('train', 'valid', 'test'), "phase must be train/valid/test"
+            self.phos = []
+            for c, clst in self.source_train_phos.items():
+                idx = self.cate2idx[c]
+                for f in clst:
+                    self.phos.append((f, idx))
+            random.shuffle(self.phos)
+
+            self.skts = []
+            for c, clst in getattr(self, 'source_%s_skts'%phase).items():
+                idx = self.cate2idx[c]
+                for f in clst:
+                    self.skts.append((f, idx))
+            random.shuffle(self.skts)
+
+        elif self.mode == 'zeroshot':
+            assert phase in ('train', 'valid', 'test'), "phase must be train/valid/test"
+            flag = 'target' if phase == 'test' else 'source'
+
+            self.phos = []
+            for c, clst in getattr(self, '%s_train_phos' % flag).items():
+                idx = self.cate2idx[c]
+                for f in clst:
+                    self.phos.append((f, idx))
+            random.shuffle(self.phos)
+
+            self.skts = []
+            for c, clst in getattr(self, '%s_%s_skts' %(flag, phase)).items():
+                idx = self.cate2idx[c]
+                for f in clst:
+                    self.skts.append((f, idx))
+            random.shuffle(self.skts)
+
+        elif self.mode.startswith('fewshot'):
+            raise NotImplementedError
+
+        else:
+            raise ValueError("mode should be 'std' or 'fewshot_x'(x is the number of shots) or 'zeroshot'")
+        print("Phase of dataset is set to '%s'."%phase)
+
+
     def __getitem__(self, index):
-        (fpho, cpho) = self.train_phos[index]
+        (fpho, cpho) = self.phos[index]
         pho = self.to_tensor(self.randomflip(self.resize(Image.open(fpho))))
 
         if self.phase == 'train':
-            (fskt, cskt) = random.choice(self.train_skts)
+            (fskt, cskt) = random.choice(self.skts)
             skt = self.to_tensor(self.randomflip(self.randomcrop(Image.open(fskt)))).expand(3, self.crop_size, self.crop_size)
         else:
             return pho, torch.LongTensor([cpho])
@@ -125,31 +165,22 @@ class TUBerlinData(Dataset):
         cates = torch.LongTensor([cskt, cpho])
         return skt, pho, cates
 
-    def get_valid(self):
+    def get_skts(self):
         # use __getitem__ to get photos?
-        if not hasattr(self, 'validskt'):
+        if not hasattr(self, '%sskt'%self.phase):
             skts, cs = [], []
-            for fskt, c in self.valid_skts:
+            for fskt, c in getattr(self, '%s_skts'%self.phase):
                 skts.append(self.to_tensor(self.centercrop(Image.open(fskt))))
                 cs.append(c)
 
             skts = torch.stack(skts).repeat(1,3,1,1)
             cs = torch.LongTensor(cs)
-            self.validskt = (skts, cs)
-        return self.validskt
+            if self.phase == 'valid':
+                self.validskt = (skts, cs)
+            elif self.phase == 'test':
+                self.testskt = (skts, cs)
 
-    def get_test(self):
-        # use __getitem__ to get photos?
-        if not hasattr(self, 'testskt'):
-            skts, cs = [], []
-            for fskt, c in self.test_skts:
-                skts.append(self.to_tensor(self.centercrop(Image.open(fskt))))
-                cs.append(c)
-
-            skts = torch.stack(skts).repeat(1,3,1,1)
-            cs = torch.LongTensor(cs)
-            self.validskt = (skts, cs)
-        return self.validskt
+        return getattr(self, '%sskt'%self.phase)
 
     def get_loader(self, **kwargs):
         return DataLoader(self, **kwargs)
