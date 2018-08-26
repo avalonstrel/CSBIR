@@ -33,6 +33,14 @@ class TUBerlinData(Dataset):
         if mode == 'std':
             cates['source'] += cates.get('target', [])
             cates['target'] = cates['source']
+        elif mode == 'zeroshot':
+            # 在家不方便大改。。凑合一下
+            valid_test_cates = [p for p in cates['source'] if len(os.path.join(self.photo_root, p))> 400]
+            random.seed(self.seed)
+            test_cates = random.sample(valid_test_cates, 30)
+            cates['target'] = test_cates
+            cates['source'] = list(set(cates['source']).difference(set(test_cates)))
+
 
         # prepare files
         self.build(cates)
@@ -169,7 +177,7 @@ class TUBerlinData(Dataset):
         # use __getitem__ to get photos?
         if not hasattr(self, '%sskt'%self.phase):
             skts, cs = [], []
-            for fskt, c in getattr(self, '%s_skts'%self.phase):
+            for fskt, c in self.skts
                 skts.append(self.to_tensor(self.centercrop(Image.open(fskt))))
                 cs.append(c)
 
