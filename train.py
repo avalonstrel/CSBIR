@@ -81,7 +81,7 @@ class Solver:
             idxs = torch.cat(idxs.split(1, dim=1)).view(-1)
 
             loss = 0
-            for loss_type in ('sphere', 'softmax', 'centre'):
+            for loss_type in ('sphere', 'softmax', 'centre', 'attribute'):
                 if loss_type in self.config.loss_type:
                     self.compute_feat(skts, phos)
                   
