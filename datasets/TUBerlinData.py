@@ -91,7 +91,7 @@ class TUBerlinData(Dataset):
             for c in cates['target']:
                 self.target_train_phos[c] = phos[c]
                 self.cate_num[self.cate2idx[c]] = len(phos[c])
-                self.target_test_skts = skts[c]
+                self.target_test_skts[c] = skts[c]
 
         elif self.mode.startswith('fewshot'):
             shot = eval(self.mode.split('_')[1])
