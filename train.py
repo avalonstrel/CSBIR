@@ -37,7 +37,7 @@ class Solver:
         # sphere loss: 这个好像没有什么特殊的操作
         for loss_type in ('sphere', 'centre', 'softmax', 'attribute'):
             if loss_type in self.config.loss_type:
-                self.model[loss_type] = losses[loss_type](self.config)
+                self.model[loss_type] = losses[loss_type](self.config, wordvec=self.data.wordvec)
                 self.loss_ratio[loss_type] = self.config.loss_ratio[self.config.loss_type.index(loss_type)]
 
         print('Successfully build all losses')

@@ -27,7 +27,7 @@ class TripletLoss(nn.Module):
 
 
 class SphereLoss(nn.Module):
-    def __init__(self, config=None, gamma=0):
+    def __init__(self, config=None, gamma=0, **kwargs):
         super(SphereLoss, self).__init__()
 
         self.fc = AngleLinear(config.feat_dim, config.c_dim).cuda()
@@ -73,7 +73,7 @@ class CentreLoss(nn.Module):
         num_classes (int): number of classes.
         feat_dim (int): feature dimension.
     """
-    def __init__(self, config):
+    def __init__(self, config, **kwargs):
         super(CentreLoss, self).__init__()
         self.num_classes = config.c_dim
         self.feat_dim = config.feat_dim
@@ -113,19 +113,20 @@ class CentreLoss(nn.Module):
 
 
 class AttributeLoss(nn.Module):
-    def __init__(self, config=None):
+    def __init__(self, config=None, **kwargs):
         super(AttributeLoss, self).__init__()
 
-        self.fc = nn.Linear(config.feat_dim, config.y_dim).cuda()
+        self.fc = nn.Linear(config.feat_dim, 100).cuda()
+        self.register_buffer('wordvec',kwargs['wordvec'])
 
     def forward(self, input, target):
         logits = self.fc(input)
-        loss = F.binary_cross_entropy_with_logits(logits, target)
+        loss = F.mse_loss(logits, self.wordvec[target])
 
         return loss  
 
 class ClassificationLoss(nn.Module):
-    def __init__(self, config):
+    def __init__(self, config, **kwargs):
         super(ClassificationLoss, self).__init__()
 
         self.fc = nn.Linear(config.feat_dim, config.c_dim).cuda()

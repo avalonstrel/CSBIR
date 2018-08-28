@@ -4,6 +4,7 @@ from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from PIL import Image
+import numpy as np
 import random
 
 class TUBerlinData(Dataset):
@@ -17,6 +18,8 @@ class TUBerlinData(Dataset):
         # load train/test cates
         with open(os.path.join(root_path, 'cate_sep.txt'), 'r') as f:
             cates_raw = list(filter(lambda x: x and (not x.startswith('.')), f.read().split('\n')))
+        # load wordvec
+        self.wordvec = torch.from_numpy(np.load(os.path.join(root_path, 'wordvec.npy'))) # shape: 250x100
 
         cates = {}
         self.cate2idx = {}
