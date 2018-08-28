@@ -147,6 +147,9 @@ class Solver:
         data.set_phase(phase)
         valid_skts, valid_cates = data.get_skts()
         cate_num = data.cate_num
+        print(cate_num)
+        for c in data.target_test_skts.keys():
+            print(data.cate2idx[c])
 
         ######### compute sketch features #########
         skts_feats = []
