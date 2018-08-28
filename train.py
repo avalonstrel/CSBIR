@@ -206,7 +206,10 @@ class Solver:
                 res = res.float()
 
             # compute p@200
-            P200.append(res[:200].mean().item())
+            if self.config.mode == 'std':
+                P200.append(res[:200].mean().item())
+            elif self.config.mode == 'zeroshot':
+                P200.append(res[:100].mean().item())
 
             # compute average precision
             k, rightk, precision = 0, 0, []
