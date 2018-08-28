@@ -101,7 +101,7 @@ class Solver:
             ### save log ###
             if (i+1) % (self.config.log_step) == 0:
                 log['time_elapse'] = time.time() - start_time
-                print_item = [list(set(['softmax', 'sphere', 'centre']).intersection(set(self.config.loss_type)))]
+                print_item = [list(set(['softmax', 'sphere', 'centre', 'attribute']).intersection(set(self.config.loss_type)))]
                 save_log(log, self.config, print_item)
 
             ### validation ###
