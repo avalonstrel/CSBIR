@@ -145,8 +145,8 @@ class Solver:
         data = deepcopy(self.data)
         self.model['net'].eval()
         data.set_phase(phase)
-        valid_skts, valid_cates = self.data.get_skts()
-        cate_num = self.data.cate_num
+        valid_skts, valid_cates = data.get_skts()
+        cate_num = data.cate_num
 
         ######### compute sketch features #########
         skts_feats = []
