@@ -79,7 +79,7 @@ class TUBerlinData(Dataset):
             for i, c in enumerate(cates['source']):
                 self.cate2idx[c] = i
                 self.source_train_phos[c] = phos[c]
-                self.cate_num[self.cate2idx[c]] = len(phos[c])
+                self.cate_num[i] = len(phos[c])
                 random.seed(self.seed)
                 random.shuffle(skts[c])
                 self.source_train_skts[c] = skts[c][:-11]
@@ -90,7 +90,7 @@ class TUBerlinData(Dataset):
             i = 0
             for c in cates['source']:
                 self.source_train_phos[c] = phos[c]
-                self.cate_num[self.cate2idx[c]] = len(phos[c])
+                self.cate_num[i] = len(phos[c])
                 random.shuffle(skts[c])
                 self.source_train_skts[c] = skts[c][:-1]
                 self.source_valid_skts[c] = skts[c][-1:]
@@ -99,7 +99,7 @@ class TUBerlinData(Dataset):
 
             for c in cates['target']:
                 self.target_train_phos[c] = phos[c]
-                self.cate_num[self.cate2idx[c]] = len(phos[c])
+                self.cate_num[i] = len(phos[c])
                 self.target_test_skts[c] = skts[c]
                 self.cate2idx[c] = i
 
