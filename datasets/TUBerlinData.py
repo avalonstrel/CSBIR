@@ -19,7 +19,7 @@ class TUBerlinData(Dataset):
         with open(os.path.join(root_path, 'cate_sep.txt'), 'r') as f:
             cates_raw = list(filter(lambda x: x and (not x.startswith('.')), f.read().split('\n')))
         # load wordvec
-        self.wordvec = torch.from_numpy(np.load(os.path.join(root_path, 'wordvec.npy'))) # shape: 250x100
+        self.wordvec = torch.from_numpy(np.load(os.path.join(root_path, 'wordvec.npy'))).float() # shape: 250x100
 
         cates = {}
         self.cate2idx = {}
@@ -87,6 +87,7 @@ class TUBerlinData(Dataset):
         elif self.mode == 'zeroshot':
             for c in cates['source']:
                 self.source_train_phos[c] = phos[c]
+                self.cate_num[self.cate2idx[c]] = len(phos[c])
                 random.shuffle(skts[c])
                 self.source_train_skts[c] = skts[c][:-1]
                 self.source_valid_skts[c] = skts[c][-1:]
