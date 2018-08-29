@@ -23,10 +23,11 @@ class TUBerlinData(Dataset):
 
         cates = {}
         self.cate2idx = {}
+        self.cate2idx_raw = {}
         for i,c in enumerate(cates_raw):
             m, c = c.split('/')
             cates[m] = cates.get(m, [])+ [c]
-
+            self.cate2idx_raw[c] = i
 
 		# rearrange cate according to mode
         assert mode in ('std', 'fewshot-train', 'fewshot-finetune', 'zeroshot')
@@ -88,13 +89,16 @@ class TUBerlinData(Dataset):
 
         elif self.mode == 'zeroshot':
             i = 0
+            wordvec = self.wordvec.clone()
             for c in cates['source']:
                 self.source_train_phos[c] = phos[c]
                 self.cate_num[i] = len(phos[c])
                 random.shuffle(skts[c])
                 self.source_train_skts[c] = skts[c][:-1]
                 self.source_valid_skts[c] = skts[c][-1:]
+                
                 self.cate2idx[c] = i
+                wordvec[i] = self.wordvec[self.cate2idx_raw[c]]
                 i += 1
 
             for c in cates['target']:
