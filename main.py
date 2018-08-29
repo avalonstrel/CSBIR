@@ -89,7 +89,7 @@ def main():
     ##### create dataset #####
     seed = config.seed if config.seed > 0 else None
     data = datasets[config.obj](config.data_root, config.crop_size, mode=config.mode, seed=seed)
-    config.c_dim = data.num_cates
+    config.c_dim = data.num_train_cates
 
     ##### train/test #####
     solver = Solver(config, data, model)

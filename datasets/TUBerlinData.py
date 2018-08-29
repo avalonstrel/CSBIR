@@ -26,9 +26,7 @@ class TUBerlinData(Dataset):
         for i,c in enumerate(cates_raw):
             m, c = c.split('/')
             cates[m] = cates.get(m, [])+ [c]
-            self.cate2idx[c] = i
-        
-        self.num_cates = len(cates_raw)
+            self.cate2idx[c] = i        
 
 		# rearrange cate according to mode
         assert mode in ('std', 'fewshot-train', 'fewshot-finetune', 'zeroshot')
@@ -43,7 +41,8 @@ class TUBerlinData(Dataset):
             test_cates = random.sample(valid_test_cates, 30)
             cates['target'] = test_cates
             cates['source'] = list(set(cates['source']).difference(set(test_cates)))
-        print(cates)
+        # print(cates)
+        self.num_train_cates = len(cates['source'])
 
         # prepare files
         self.build(cates)
@@ -75,6 +74,7 @@ class TUBerlinData(Dataset):
             phos[c] = list(map(lambda x: os.path.join(self.photo_root, c, x), flst))
             flst = filter(lambda x:x and (not x.startswith('.')), os.listdir(os.path.join(self.sketch_root, c)))
             skts[c] = list(map(lambda x: os.path.join(self.sketch_root, c, x), flst))
+
         if self.mode == 'std':
             for c in cates['source']:
                 self.source_train_phos[c] = phos[c]
@@ -84,6 +84,7 @@ class TUBerlinData(Dataset):
                 self.source_train_skts[c] = skts[c][:-11]
                 self.source_valid_skts[c] = skts[c][-11:-10]
                 self.target_test_skts[c] = skts[c][-10:]
+
         elif self.mode == 'zeroshot':
             for c in cates['source']:
                 self.source_train_phos[c] = phos[c]
