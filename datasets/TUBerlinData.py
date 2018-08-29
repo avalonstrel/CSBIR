@@ -100,13 +100,15 @@ class TUBerlinData(Dataset):
                 self.cate2idx[c] = i
                 wordvec[i] = self.wordvec[self.cate2idx_raw[c]]
                 i += 1
+                # print('source valid\n',self.source_valid_skts)
 
             for c in cates['target']:
                 self.target_train_phos[c] = phos[c]
                 self.cate_num[i] = len(phos[c])
                 self.target_test_skts[c] = skts[c]
                 self.cate2idx[c] = i
-
+                # print('target test\n', self.target_test_skts)
+                i += 1
         elif self.mode.startswith('fewshot'):
             shot = eval(self.mode.split('_')[1])
             for c in cates['source']:

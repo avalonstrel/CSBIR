@@ -180,6 +180,7 @@ class Solver:
                 phos_feats.append(feat)
         phos_feats = torch.cat(phos_feats)
         phos_cates = torch.cat(phos_cates).to(self.config.device)
+        #print(phos_cates)
 
         ######### compute metric (MAP, precision@200) #########
         APs, P200 = [], []
@@ -187,6 +188,7 @@ class Solver:
         for i in tqdm(range(len(skts_feats))):
             skt_feat = skts_feats[i].unsqueeze(0)
             c = valid_cates[i].item()
+            #print(c)
             # compute distance
             with torch.no_grad():
                 if self.config.distance == 'sq':
@@ -202,7 +204,9 @@ class Solver:
                             dist = dist.mean(dim=1)
                         elif self.config.test_dist == 'min':
                             dist = dist.min(dim=1)[0]
+                        #print(dist)
                 res = phos_cates[dist.sort(dim=0)[1]] == c
+                #print(phos_cates[dist.sort(dim=0)[1]])
                 res = res.float()
 
             # compute p@200
