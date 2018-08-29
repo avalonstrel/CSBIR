@@ -26,7 +26,7 @@ class TUBerlinData(Dataset):
         for i,c in enumerate(cates_raw):
             m, c = c.split('/')
             cates[m] = cates.get(m, [])+ [c]
-            self.cate2idx[c] = i        
+
 
 		# rearrange cate according to mode
         assert mode in ('std', 'fewshot-train', 'fewshot-finetune', 'zeroshot')
@@ -76,7 +76,8 @@ class TUBerlinData(Dataset):
             skts[c] = list(map(lambda x: os.path.join(self.sketch_root, c, x), flst))
 
         if self.mode == 'std':
-            for c in cates['source']:
+            for i, c in enumerate(cates['source']):
+                self.cate2idx[c] = i
                 self.source_train_phos[c] = phos[c]
                 self.cate_num[self.cate2idx[c]] = len(phos[c])
                 random.seed(self.seed)
@@ -86,17 +87,21 @@ class TUBerlinData(Dataset):
                 self.target_test_skts[c] = skts[c][-10:]
 
         elif self.mode == 'zeroshot':
+            i = 0
             for c in cates['source']:
                 self.source_train_phos[c] = phos[c]
                 self.cate_num[self.cate2idx[c]] = len(phos[c])
                 random.shuffle(skts[c])
                 self.source_train_skts[c] = skts[c][:-1]
                 self.source_valid_skts[c] = skts[c][-1:]
+                self.cate2idx[c] = i
+                i += 1
 
             for c in cates['target']:
                 self.target_train_phos[c] = phos[c]
                 self.cate_num[self.cate2idx[c]] = len(phos[c])
                 self.target_test_skts[c] = skts[c]
+                self.cate2idx[c] = i
 
         elif self.mode.startswith('fewshot'):
             shot = eval(self.mode.split('_')[1])
