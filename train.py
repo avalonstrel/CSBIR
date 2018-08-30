@@ -35,7 +35,7 @@ class Solver:
         self.loss_ratio = {}
 
         # sphere loss: 这个好像没有什么特殊的操作
-        for loss_type in ('sphere', 'centre', 'softmax', 'attribute'):
+        for loss_type in ('sphere', 'centre', 'softmax', 'attribute', 'gan'):
             if loss_type in self.config.loss_type:
                 self.model[loss_type] = losses[loss_type](self.config, wordvec=self.data.wordvec)
                 self.loss_ratio[loss_type] = self.config.loss_ratio[self.config.loss_type.index(loss_type)]
@@ -45,7 +45,10 @@ class Solver:
     def build_opts(self):
         opts = dict()
         for key, net in self.model.items():
-            opts[key] = torch.optim.Adam(net.parameters(), lr=self.config.lr, weight_decay=self.config.decay)
+            if key != 'gan':
+                opts[key] = torch.optim.Adam(net.parameters(), lr=self.config.lr, weight_decay=self.config.decay)
+            else:
+                opts[key] = torch.optim.Adam(net.parameters(), lr=self.config.lr*10)
         self.opts = opts
         print('Successfully build all opts')
 
@@ -83,8 +86,10 @@ class Solver:
             idxs = torch.cat(idxs.split(1, dim=1)).view(-1)
 
             loss = 0
+            update_key = []
             for loss_type in ('sphere', 'softmax', 'centre', 'attribute'):
                 if loss_type in self.config.loss_type:
+                    update_key.append(loss_type)
                     self.compute_feat(skts, phos)
                   
                     loss_ = self.model[loss_type](self.feats, idxs)
@@ -92,10 +97,36 @@ class Solver:
                     log['loss/%s'%loss_type] = loss_.item()
                     loss += loss_ * self.loss_ratio[loss_type]
 
-            for up_opt in self.opts.keys():
+            if 'gan' in self.config.loss_type:
+                self.compute_feat(skts, phos)
+
+                if (i+1) % 5 != 0:
+                    update_key.append('gan')
+                    out_skt, out_pho = self.model['gan'](self.feats.detach()).split(self.feats.size(0)//2)
+                    out_skt, out_pho = out_skt.mean(), out_pho.mean()
+                    # gradient panelty
+                    feat_skt, feat_pho = self.feats.detach().split(self.feats.size(0)//2)
+                    alpha = torch.rand(feat_pho.size(0), 1, 1, 1).to(self.config.device)
+                    phos_hat = (alpha * feat_pho + (1 - alpha) * self.feat_skt).requires_grad_(True)
+                    out_src_pho = self.model['gan'](phos_hat)
+                    gp_loss = gradient_penalty(out_src_pho, phos_hat, self.config.device)
+
+                    loss_ = -out_skt + out_pho + 10 * gp_loss
+                    log['loss/gan_skt'] = out_skt.item()
+                    log['loss/gan_pho'] = out_pho.item()
+                    loss += loss_ * self.loss_ratio['gan']
+
+                else:
+                    out_skt, out_pho = self.model['gan'](self.feats).split(self.feats.size(0)//2)
+                    out_skt, out_pho = out_skt.mean(), out_pho.mean()
+                    loss_ = out_skt - out_pho
+                    loss += loss_ * self.loss_ratio['gan']                    
+
+
+            for up_opt in update_key:
                 self.opts[up_opt].zero_grad()
             loss.backward()
-            for up_opt in self.opts.keys():
+            for up_opt in update_key:
                 self.opts[up_opt].step()
 
             self.feats = None
@@ -104,6 +135,8 @@ class Solver:
             if (i+1) % (self.config.log_step) == 0:
                 log['time_elapse'] = time.time() - start_time
                 print_item = [list(set(['softmax', 'sphere', 'centre', 'attribute']).intersection(set(self.config.loss_type)))]
+                if 'gan' in self.config.loss_type:
+                    print_item[0].append('gan_skt','gan_pho')
                 save_log(log, self.config, print_item)
 
             ### validation ###
@@ -126,8 +159,8 @@ class Solver:
                 print('update learning rate to {:.6f}'.format(lr))
 
 
-    def compute_feat(self, skts, phos):
-        if self.feats is None:
+    def compute_feat(self, skts, phos, force=False):
+        if self.feats is None or force:
             self.feats = self.model['net'](torch.cat([skts, phos]))
 
     def test(self, log, phase='valid'):
@@ -250,4 +283,18 @@ class Solver:
 
         return MAP, P200
 
+
+def gradient_penalty(y, x, device):
+    """Compute gradient penalty: (L2_norm(dy/dx) - 1)**2."""
+    weight = torch.ones(y.size()).to(device)
+    dydx = torch.autograd.grad(outputs=y,
+                               inputs=x,
+                               grad_outputs=weight,
+                               retain_graph=True,
+                               create_graph=True,
+                               only_inputs=True)[0]
+
+    dydx = dydx.view(dydx.size(0), -1)
+    dydx_l2norm = torch.sqrt(torch.sum(dydx**2, dim=1))
+    return torch.mean((dydx_l2norm-1)**2)    
 

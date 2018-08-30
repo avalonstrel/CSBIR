@@ -132,3 +132,22 @@ class Pnasnet5(nn.Module):
         if self.norm:
             feat = F.normalize(feat, p=2, dim=1)
         return feat          
+
+
+class Discriminator(nn.Module):
+    def __init__(self, config):
+        super(Discriminator, self).__init__()
+
+        feat_dim = config.feat_dim
+        layers = []
+        # 2048 -> 512 -> 128 -> 32 -> 8 -> 1
+        while feat_dim > 4:
+            layers.append(nn.Linear(feat_dim, feat_dim//2))
+            feat_dim = feat_dim // 2
+            layers.append(nn.LeakyReLU(0.1, True))
+
+        layers.append(nn.Linear(feat_dim, 1))
+        self.main = nn.Sequential(*layers)
+
+    def forward(self, x):
+        return self.main(x)
