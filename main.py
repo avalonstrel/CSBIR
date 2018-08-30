@@ -79,7 +79,8 @@ def get_parameter():
 
 def main():
     config = get_parameter()
-    save_config(config)
+    if config.phase == 'train':
+        save_config(config)
     cudnn.benchmark = True
     config.device = torch.device('cuda:0')
     ##### build model #####

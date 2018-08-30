@@ -113,7 +113,7 @@ class Solver:
             #if (i+1) % self.config.model_save_step == 0:
             #    ### save models ###
                 save_model(self.model, self.config, log)
-                print('saving models successfully!\n')
+                print('\nsaving models successfully!')
                 self.test(log, 'valid')
                 # save model before validating
 
@@ -242,7 +242,7 @@ class Solver:
         elif phase == 'test':
             save_valid_test_result(self.config, int(self.config.pretrained_model), MAP, P200, phase)
 
-        print('result: MAP:{:.4f} | P200:{:4f}'.format(MAP, P200))
+        print('result: MAP:{:.4f} | P200:{:4f}\n'.format(MAP, P200))
 
         # recover state
         self.data.set_phase('train')
