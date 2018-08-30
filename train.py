@@ -160,7 +160,10 @@ class Solver:
                 else:
                     skts = skts.to(self.config.device)
                     skts = torch.cat([skts, shuffle(skts, dim=3, inv=True)])
-                    feat = torch.stack(self.model['net'](skts).split(skts.size(0)//2), dim=2)
+                    feat = self.model['net'](skts)
+                    if 'attribute' in self.model.keys():
+                        feat = torch.cat([feat, self.model['attribute'].fc(feat) * self.config.test_lambda_attribute], dim=1)
+                    feat = torch.stack(feat.split(skts.size(0)//2), dim=2)
                 skts_feats.append(feat)
         skts_feats = torch.cat(skts_feats)
 
@@ -178,7 +181,9 @@ class Solver:
                 else:
                     phos = phos.to(self.config.device)
                     phos = torch.cat([phos, shuffle(phos, dim=3, inv=True)])
-                    feat = torch.stack(self.model['net'](phos).split(phos.size(0)//2), dim=2)
+                    if 'attribute' in self.model.keys():
+                        feat = torch.cat([feat, self.model['attribute'].fc(feat) * self.config.test_lambda_attribute], dim=1)
+                    feat = torch.stack(feat.split(phos.size(0)//2), dim=2)
                 phos_feats.append(feat)
         phos_feats = torch.cat(phos_feats)
         phos_cates = torch.cat(phos_cates).to(self.config.device)

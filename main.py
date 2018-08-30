@@ -45,6 +45,9 @@ def get_parameter():
     parser.add_argument('--loss_type', type=str, default='triplet')
     parser.add_argument('--loss_ratio', type=str, default='1.0')
 
+    # test
+    parser.add_argument('--test_lambda_attribute', type=float, default=1.0)
+
     # log
     parser.add_argument('--log_step', type=int, default=20)
     parser.add_argument('--valid_step', type=int, default=1000)
