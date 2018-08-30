@@ -82,6 +82,7 @@ class SketchyData(Dataset):
             flst = filter(lambda x:x and (not x.startswith('.')), os.listdir(os.path.join(self.photo_root, c)))
             phos[c] = list(map(lambda x: os.path.join(self.photo_root, c, x), flst))
             flst = filter(lambda x:x and (not x.startswith('.')), os.listdir(os.path.join(self.sketch_root, c)))
+            flst = filter(lambda x: not ((c+'/'+x) in self.invalid_skts), flst)            
             skts[c] = list(map(lambda x: os.path.join(self.sketch_root, c, x), flst))
 
         if self.mode == 'std':
