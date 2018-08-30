@@ -101,7 +101,7 @@ class TUBerlinData(Dataset):
                 wordvec[i] = self.wordvec[self.cate2idx_raw[c]]
                 i += 1
                 # print('source valid\n',self.source_valid_skts)
-
+            self.wordvec = wordvec
             for c in cates['target']:
                 self.target_train_phos[c] = phos[c]
                 self.cate_num[i] = len(phos[c])
