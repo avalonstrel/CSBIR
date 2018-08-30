@@ -121,7 +121,7 @@ class AttributeLoss(nn.Module):
 
     def forward(self, input, target):
         logits = self.fc(input)
-        loss = F.mse_loss(logits, self.wordvec[target])
+        loss = (logits-self.wordvec[target]).abs().mean()
 
         return loss  
 
