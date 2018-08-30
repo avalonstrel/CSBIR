@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from PIL import Image
 import random
+import numpy as np
 
 class SketchyData(Dataset):
     def __init__(self, root_path, crop_size=225, mode='std', **kwargs):
