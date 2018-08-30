@@ -52,12 +52,14 @@ class Solver:
 
     def train(self):
 
+        start_i = self.config.pretrained_model + 1
         # load model / model to device
         for key in self.model.keys():
             self.model[key] = self.model[key].to(self.config.device)
         if self.config.pretrained_model > 0:
             load_model(self.model, self.config)
             print('loading models successfully!\n')
+           
 
         # data_loader
         data_iter = iter(self.data_loader)
@@ -72,7 +74,7 @@ class Solver:
 
         # start training!
         self.feats = None
-        for i in range(self.config.num_steps):
+        for i in range(start_i, self.config.num_steps):
             log['step'] = i+1
 
             # get data
